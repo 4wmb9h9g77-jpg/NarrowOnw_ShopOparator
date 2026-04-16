@@ -6,49 +6,44 @@
         body { background: #121212; color: #00ffaa; font-family: sans-serif; padding: 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
         .card { border: 1px solid #333; padding: 10px; text-align: center; background: #1e1e1e; border-radius: 8px; }
-        img { width: 100%; height: auto; background: #000; border-radius: 4px; }
-        .error { color: #ff4444; background: #331111; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
+        img { width: 100%; height: auto; background: #000; border-radius: 4px; min-height: 100px; }
     </style>
 </head>
 <body>
-    <h1>🏹 Narrow One Shop - Debug Mode</h1>
-    <div id="debug-info"></div> <div id="output" class="grid"></div>
+    <h1>🏹 Narrow One Secret Shop</h1>
+    <div id="output" class="grid"></div>
 
     <script>
-    // お前のURLから導き出した「完全正解」の設定だ！
-    const USER = '4wmb9h9g77-jpg'; 
-    const REPO = 'NarrowOnw_ShopOparator';
-    
-    // もしファイル名が違うならここだけ直してくれ！
-    const FILE = 'torsoImage.txt'; 
+        // お前が「開けた」と言ったURLを元に構築したぜ
+        const USER = '4wmb9h9g77-jpg'; 
+        const REPO = 'NarrowOnw_ShopOparator';
+        const FILE = 'torsoImage.json'; // .json で開けたならこれだ！
 
-    const DATA_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/main/${FILE}`;
+        const DATA_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/main/${FILE}`;
 
-    async function loadData() {
-        try {
-            console.log("Accessing:", DATA_URL);
-            const res = await fetch(DATA_URL);
-            
-            if (!res.ok) {
-                throw new Error(`ファイルが見つからないぜ。ステータス: ${res.status}`);
+        async function loadData() {
+            try {
+                const res = await fetch(DATA_URL);
+                if (!res.ok) throw new Error("Network response was not ok");
+                
+                const data = await res.json();
+                const output = document.getElementById('output');
+
+                data.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    // もし画像が出ない場合は、ここを item.image.image に変える必要があるかもな
+                    const imgSrc = item.image; 
+                    div.innerHTML = `<img src="${imgSrc}"><p style="font-size:12px;">${item.id}</p>`;
+                    output.appendChild(div);
+                });
+                console.log("✅ Load Complete!");
+            } catch (err) {
+                console.error("❌ Error:", err);
+                document.body.insertAdjacentHTML('afterbegin', `<p style="color:red;">Failed to load data. URL: ${DATA_URL}</p>`);
             }
-
-            const data = await res.json();
-            const output = document.getElementById('output');
-
-            data.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'card';
-                // item.image が Base64データであることを想定
-                div.innerHTML = `<img src="${item.image}"><p style="font-size:10px;">${item.id}</p>`;
-                output.appendChild(div);
-            });
-        } catch (err) {
-            console.error("エラーだ！:", err);
-            document.body.insertAdjacentHTML('afterbegin', `<p style="color:red;">❌ ロード失敗: ${err.message}</p>`);
         }
-    }
-    loadData();
+        loadData();
     </script>
 </body>
 </html>
