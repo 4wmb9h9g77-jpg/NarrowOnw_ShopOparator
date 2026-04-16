@@ -14,36 +14,30 @@
     <div id="output" class="grid"></div>
 
     <script>
-        // お前が「開けた」と言ったURLを元に構築したぜ
-        const USER = '4wmb9h9g77-jpg'; 
-        const REPO = 'NarrowOnw_ShopOparator';
-        const FILE = 'torsoImage.json'; // .json で開けたならこれだ！
+    async function loadData() {
+        // 同じ場所にあるファイルを名前だけで指定する！
+        const FILE_NAME = 'torsoImage.json'; 
 
-        const DATA_URL = `https://4wmb9h9g77-jpg.github.io/NarrowOnw_ShopOparator/`;
+        try {
+            console.log("Fetching:", FILE_NAME);
+            const res = await fetch(FILE_NAME); // これだけでOK！
+            
+            if (!res.ok) throw new Error("Status: " + res.status);
 
-        async function loadData() {
-            try {
-                const res = await fetch(DATA_URL);
-                if (!res.ok) throw new Error("Network response was not ok");
-                
-                const data = await res.json();
-                const output = document.getElementById('output');
-
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'card';
-                    // もし画像が出ない場合は、ここを item.image.image に変える必要があるかもな
-                    const imgSrc = item.image; 
-                    div.innerHTML = `<img src="${imgSrc}"><p style="font-size:12px;">${item.id}</p>`;
-                    output.appendChild(div);
-                });
-                console.log("✅ Load Complete!");
-            } catch (err) {
-                console.error("❌ Error:", err);
-                document.body.insertAdjacentHTML('afterbegin', `<p style="color:red;">Failed to load data. URL: ${DATA_URL}</p>`);
-            }
+            const data = await res.json();
+            const output = document.getElementById('output');
+            
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `<img src="${item.image}"><p>${item.id}</p>`;
+                output.appendChild(div);
+            });
+        } catch (err) {
+            document.body.innerHTML += `<h2 style="color:red">ERROR: ${err.message}</h2>`;
         }
-        loadData();
-    </script>
+    }
+    loadData();
+</script>
 </body>
 </html>
