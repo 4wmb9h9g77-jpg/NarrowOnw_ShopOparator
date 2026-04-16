@@ -15,43 +15,40 @@
     <div id="debug-info"></div> <div id="output" class="grid"></div>
 
     <script>
-        // 【重要】ここをお前の情報に正確に書き換えてくれ！
-        const USER = '4wmb9h9g77-jpg';
-        const REPO = 'narrow-one-shop';
-        // ファイル名が .txt ならここを torsoImage.txt に変更しろ！
-        const FILE = 'torso.json'; 
+    // お前のURLから導き出した「完全正解」の設定だ！
+    const USER = '4wmb9h9g77-jpg'; 
+    const REPO = 'NarrowOnw_ShopOparator';
+    
+    // もしファイル名が違うならここだけ直してくれ！
+    const FILE = 'torsoImage.txt'; 
 
-        const DATA_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/main/${FILE}`;
+    const DATA_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/main/${FILE}`;
 
-        async function loadData() {
-            const debugInfo = document.getElementById('debug-info');
+    async function loadData() {
+        try {
+            console.log("Accessing:", DATA_URL);
+            const res = await fetch(DATA_URL);
+            
+            if (!res.ok) {
+                throw new Error(`ファイルが見つからないぜ。ステータス: ${res.status}`);
+            }
+
+            const data = await res.json();
             const output = document.getElementById('output');
 
-            try {
-                console.log("Fetching from:", DATA_URL);
-                const res = await fetch(DATA_URL);
-                
-                if (!res.ok) {
-                    throw new Error(`データの取得に失敗したぜ！ (Status: ${res.status})\nURLが間違っていないか確認してくれ。`);
-                }
-
-                const data = await res.json();
-                
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'card';
-                    div.innerHTML = `<img src="${item.image}"><p style="font-size:12px;">${item.id}</p>`;
-                    output.appendChild(div);
-                });
-
-                debugInfo.innerHTML = `<p style="color: #00ff00;">✅ ${data.length}個のアイテムを読み込んだぜ！</p>`;
-
-            } catch (err) {
-                console.error(err);
-                debugInfo.innerHTML = `<div class="error">❌ エラー発生:<br>${err.message}<br><br>現在の設定URL:<br>${DATA_URL}</div>`;
-            }
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                // item.image が Base64データであることを想定
+                div.innerHTML = `<img src="${item.image}"><p style="font-size:10px;">${item.id}</p>`;
+                output.appendChild(div);
+            });
+        } catch (err) {
+            console.error("エラーだ！:", err);
+            document.body.insertAdjacentHTML('afterbegin', `<p style="color:red;">❌ ロード失敗: ${err.message}</p>`);
         }
-        loadData();
+    }
+    loadData();
     </script>
 </body>
 </html>
