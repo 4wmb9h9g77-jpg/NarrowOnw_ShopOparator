@@ -1,1 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Narrow One Secret Shop</title>
+    <style>
+        body { background: #121212; color: #00ffaa; font-family: sans-serif; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .card { border: 1px solid #333; padding: 10px; text-align: center; }
+        img { width: 100%; height: auto; background: #222; }
+    </style>
+</head>
+<body>
+    <h1>Narrow One Shop - Test</h1>
+    <div id="output" class="grid"></div>
 
+    <script>
+        // お前のGitHubのユーザー名とリポジトリ名に書き換えろ！
+        const USER = 'お前のユーザー名';
+        const REPO = 'narrow-one-shop';
+        const DATA_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/main/torso.json`;
+
+        async function loadData() {
+            const res = await fetch(DATA_URL);
+            const data = await res.json();
+            const output = document.getElementById('output');
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `<img src="${item.image}"><p>${item.id}</p>`;
+                output.appendChild(div);
+            });
+        }
+        loadData();
+    </script>
+</body>
+</html>
