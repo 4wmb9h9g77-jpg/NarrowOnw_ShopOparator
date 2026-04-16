@@ -1,43 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <title>Narrow One Secret Shop</title>
+    <meta charset="UTF-8">
+    <title>Narrow One - Edit Menu</title>
     <style>
-        body { background: #121212; color: #00ffaa; font-family: sans-serif; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .card { border: 1px solid #333; padding: 10px; text-align: center; background: #1e1e1e; border-radius: 8px; }
-        img { width: 100%; height: auto; background: #000; border-radius: 4px; min-height: 100px; }
+        /* Narrow Oneの基本カラー */
+        :root {
+            --blueNight: #1a2a3a;
+            --accentGreen: #00ffaa;
+            --paperColor: #a3a3a3;
+        }
+
+        body {
+            background-color: #0c0c0c;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 全体レイアウト (Container Hierarchy) */
+        .shop-skin-selection-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3列表示 */
+            gap: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        /* 各アイテム（Shop Item）の内部構造 */
+        .shop-class-selection-item {
+            background: var(--blueNight);
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            width: 180px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .shop-class-selection-item:hover {
+            transform: scale(1.05);
+            border-color: var(--accentGreen);
+        }
+
+        /* クラス名ヘッダー */
+        .dialogTitle {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 画像コンテナ (wrinkled-paper-maskの再現) */
+        .class-selection-image-container {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            background: var(--paperColor);
+            border: 2px solid #717171;
+            position: relative;
+            /* シワ加工の代わりのテクスチャ感 */
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
+        }
+
+        .class-selection-image {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Editボタン */
+        .shop-skin-selection-edit-button {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            width: 100%;
+        }
+
+        .shop-skin-selection-edit-button:hover {
+            background: var(--accentGreen);
+            color: black;
+        }
+
+        /* モーダル（編集画面）の簡易版 */
+        #edit-modal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #222;
+            border: 3px solid var(--accentGreen);
+            padding: 30px;
+            z-index: 100;
+            border-radius: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>🏹 Narrow One Secret Shop</h1>
-    <div id="output" class="grid"></div>
 
-    <script>
-    async function loadData() {
-        // 同じ場所にあるファイルを名前だけで指定する！
-        const FILE_NAME = 'torsoImage.json'; 
+<div class="shop-skin-selection-list" id="class-list">
+    </div>
 
+<div id="edit-modal">
+    <h2 id="modal-title">Edit Class</h2>
+    <div id="item-preview-grid" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;">
+        </div>
+    <button onclick="closeEdit()">Close</button>
+</div>
+
+<script>
+    const classes = ["Scout", "Assault", "Sharpshooter", "Runner", "Support", "Defender"];
+
+    // クラス選択画面の生成
+    const listCont = document.getElementById('class-list');
+    classes.forEach(cls => {
+        const item = document.createElement('div');
+        item.className = 'shop-class-selection-item';
+        item.innerHTML = `
+            <h3 class="dialogTitle">${cls}</h3>
+            <div class="class-selection-image-container">
+                <div class="class-selection-image" id="img-${cls}"></div>
+            </div>
+            <button class="shop-skin-selection-edit-button" onclick="openEdit('${cls}')">
+                <span>EDIT</span>
+            </button>
+        `;
+        listCont.appendChild(item);
+    });
+
+    // 編集画面を開く
+    function openEdit(className) {
+        document.getElementById('modal-title').innerText = `Editing ${className}`;
+        document.getElementById('edit-modal').style.display = 'block';
+        loadItems(); // GitHubからアイテムを読み込む
+    }
+
+    function closeEdit() {
+        document.getElementById('edit-modal').style.display = 'none';
+    }
+
+    // お前が成功させた「相対パス」での読み込み
+    async function loadItems() {
+        const grid = document.getElementById('item-preview-grid');
+        grid.innerHTML = "Loading items...";
         try {
-            console.log("Fetching:", FILE_NAME);
-            const res = await fetch(FILE_NAME); // これだけでOK！
-            
-            if (!res.ok) throw new Error("Status: " + res.status);
-
+            const res = await fetch('torsoImage.json'); // さっき成功したファイル
             const data = await res.json();
-            const output = document.getElementById('output');
+            grid.innerHTML = "";
             
-            data.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'card';
-                div.innerHTML = `<img src="${item.image}"><p>${item.id}</p>`;
-                output.appendChild(div);
+            // 最初の8個だけ表示してみる
+            data.slice(0, 8).forEach(item => {
+                const img = document.createElement('img');
+                img.src = item.image;
+                img.style.width = "60px";
+                img.style.cursor = "pointer";
+                img.onclick = () => alert("Equipped: " + item.id);
+                grid.appendChild(img);
             });
-        } catch (err) {
-            document.body.innerHTML += `<h2 style="color:red">ERROR: ${err.message}</h2>`;
+        } catch (e) {
+            grid.innerHTML = "Load failed.";
         }
     }
-    loadData();
 </script>
+
 </body>
 </html>
